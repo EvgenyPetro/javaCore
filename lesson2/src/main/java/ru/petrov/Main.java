@@ -9,8 +9,8 @@ public class Main {
     private static final char AI_PIC = 'O';
     private static final char EMPTY_PIC = '✺';
 
-    private static final int fieldX = 4;
-    private static final int fieldY = 4;
+    private static final int ROWS = 2;
+    private static final int COLUMN = 4;
     private static final int winnerCombination = 2;
 
     private static final Scanner scanner = new Scanner(System.in);
@@ -19,6 +19,10 @@ public class Main {
     private static char[][] field;
 
     public static void main(String[] args) {
+        startGame();
+    }
+
+    private static void startGame() {
         init();
         printField(field);
         while (true) {
@@ -36,10 +40,9 @@ public class Main {
     }
 
     private static void init() {
-        field = new char[fieldX][fieldY];
-
-        for (int x = 0; x < fieldX; x++) {
-            for (int y = 0; y < fieldY; y++) {
+        field = new char[ROWS][COLUMN];
+        for (int x = 0; x < ROWS; x++) {
+            for (int y = 0; y < COLUMN; y++) {
                 field[x][y] = EMPTY_PIC;
             }
         }
@@ -48,13 +51,13 @@ public class Main {
     private static void printField(char[][] field) {
 
         System.out.print("+-");
-        for (int x = 1; x < fieldX + 1; x++) {
+        for (int x = 1; x < COLUMN + 1; x++) {
             System.out.print(x + "-");
         }
         System.out.println();
 
-        for (int x = 0; x < fieldX; x++) {
-            for (int y = 0; y < fieldY; y++) {
+        for (int x = 0; x < ROWS; x++) {
+            for (int y = 0; y < COLUMN; y++) {
                 if (y == 0) {
                     System.out.print(x + 1 + "⎜");
                 } else System.out.print("⎜");
@@ -63,7 +66,7 @@ public class Main {
             System.out.println();
         }
 
-        for (int x = 0; x < fieldX * 2 + 2; x++) {
+        for (int x = 0; x < ROWS * 2 + 2; x++) {
             System.out.print("-");
         }
         System.out.println();
@@ -75,7 +78,7 @@ public class Main {
         do {
 
             while (true) {
-                System.out.printf("Введите координаты хода X (от 1 до %d)\n", fieldX);
+                System.out.printf("Введите координаты хода X (от 1 до %d)\n", ROWS);
                 if (scanner.hasNextInt()) {
                     x = scanner.nextInt() - 1;
                     scanner.nextLine();
@@ -87,7 +90,7 @@ public class Main {
             }
 
             while (true) {
-                System.out.printf("Введите координаты хода Y(от 1 до %d)\n", fieldY);
+                System.out.printf("Введите координаты хода Y(от 1 до %d)\n", COLUMN);
                 if (scanner.hasNextInt()) {
                     y = scanner.nextInt() - 1;
                     scanner.nextLine();
@@ -103,37 +106,38 @@ public class Main {
 
     }
 
-    private static boolean isCellEmpty(int x, int y) {
-        return field[x][y] == EMPTY_PIC;
-    }
 
     private static void AITurn() {
         int x;
         int y;
 
-        x = rand.nextInt(fieldX);
-        y = rand.nextInt(fieldY);
+        x = rand.nextInt(ROWS);
+        y = rand.nextInt(COLUMN);
         while (true) {
             if (field[x][y] == EMPTY_PIC) {
                 field[x][y] = AI_PIC;
                 return;
             } else {
-                x = rand.nextInt(fieldX);
-                y = rand.nextInt(fieldY);
+                x = rand.nextInt(ROWS);
+                y = rand.nextInt(COLUMN);
             }
         }
-
     }
 
     private static boolean isCellValid(int x, int y) {
-        if (x < 0 || x >= fieldX || y < 0 || y >= fieldY) {
-            return false;
-        }
+        return (x >= 0 && x < ROWS && y >= 0 && y < COLUMN);
+    }
+
+    private static boolean isCellEmpty(int x, int y) {
         return field[x][y] == EMPTY_PIC;
     }
 
     private static boolean checkWinnerCombination(char c, String s) {
-        if (checkWin(c)) {
+        if (checkXY(c)) {
+            System.out.println(s);
+            return true;
+        }
+        if (checkDiagonal(c)) {
             System.out.println(s);
             return true;
         }
@@ -141,13 +145,54 @@ public class Main {
             System.out.println("Ничья!");
             return true;
         }
+        return false;
+    }
 
+    private static boolean checkXY(char symbol) {
+
+        for (int i = 0; i < ROWS; i++) {
+            int cols = 0;
+            for (int j = 0; j < COLUMN; j++) {
+                cols = (field[i][j] == symbol) ? cols + 1 : 0;
+                if (cols == winnerCombination) {
+                    return true;
+                }
+                int row = 0;
+                for (int x = 0; x < ROWS; x++) {
+                    row = (field[x][j] == symbol) ? row + 1 : 0;
+                    if (row == winnerCombination) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean checkDiagonal(char symbol) {
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLUMN; j++) {
+                int up = 0;
+                int down = 0;
+                for (int x = 0; x < winnerCombination; x++) {
+                    if (isCellValid(i + x, j + x)) {
+                        up = field[i + x][j + x] == symbol ? up + 1 : 0;
+                    }
+                    if (isCellValid(i + x, j - x)) {
+                        down = field[i + x][j - x] == symbol ? down + 1 : 0;
+                    }
+                    if (up == winnerCombination || down == winnerCombination) {
+                        return true;
+                    }
+                }
+            }
+        }
         return false;
     }
 
     private static boolean checkDraw() {
-        for (int x = 0; x < fieldX; x++) {
-            for (int y = 0; y < fieldY; y++) {
+        for (int x = 0; x < ROWS; x++) {
+            for (int y = 0; y < COLUMN; y++) {
                 if (isCellEmpty(x, y)) {
                     return false;
                 }
@@ -156,24 +201,4 @@ public class Main {
         return true;
     }
 
-
-
-    private static boolean checkWin(char c){
-
-        // Проверка по трем горизонталям
-        if (field[0][0] == c && field[0][1] == c && field[0][2] == c) return true;
-        if (field[1][0] == c && field[1][1] == c && field[1][2] == c) return true;
-        if (field[2][0] == c && field[2][1] == c && field[2][2] == c) return true;
-
-        // Проверка по трем вертикалям
-        if (field[0][0] == c && field[1][0] == c && field[2][0] == c) return true;
-        if (field[0][1] == c && field[1][1] == c && field[2][1] == c) return true;
-        if (field[0][2] == c && field[1][2] == c && field[2][2] == c) return true;
-
-        // Проверка по диагоналям
-        if (field[0][0] == c && field[1][1] == c && field[2][2] == c) return true;
-        if (field[0][2] == c && field[1][1] == c && field[2][0] == c) return true;
-
-        return false;
-    }
 }
