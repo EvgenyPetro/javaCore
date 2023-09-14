@@ -1,9 +1,11 @@
+package ru.petrov;
+
 import java.io.*;
 
 public class Backup {
     public static void main(String[] args) throws IOException {
-        File source = new File("/Users/user1/geekbrains/java/core/lesson5");
-        File dist = new File("/Users/user1/geekbrains/java/core/backup");
+        File source = new File("/Users/petro/geekbrains/java/core/lesson5");
+        File dist = new File("/Users/petro/geekbrains/java/core/backup");
         copyFilesAndDir(source, dist);
     }
 
